@@ -74,30 +74,48 @@ export default async function handler(req, res) {
 
         const payment_TrxID = bodyData.trx_id;
         const payment_MerchantRef = bodyData.merchant_ref;
-        const payment_Status = bodyData.status;
         const payment_StatusKode = parseInt(bodyData.status_kode);
+        const payment_Status = bodyData.status ? bodyData.status.toLowerCase() : '';
 
-        console.log(`[Sakurupiah Log] Trx: ${payment_TrxID} | Ref: ${payment_MerchantRef} | Status: ${payment_Status} (${payment_StatusKode})`);
+        console.log(`[Sakurupiah Log] Mengetes Status: "${payment_Status}" dengan Kode: ${payment_StatusKode}`);
 
         // 5. Percabangan Logika Status Pembayaran
         if (payment_Status === "berhasil" || payment_StatusKode === 1) {
 
-            // [LOGIKAMU] Tempatkan proses sukses di sini (Misal: Kirim Bot Telegram / Proses Toko Digital)
+            // [LOGIKAMU] Tempatkan proses sukses di sini 
+            // (Misal: Kirim Bot Telegram / Proses API Digiflaz)
+            console.log("👉 Menjalankan logika transaksi BERHASIL");
 
-            return res.status(200).json({ success: true, message: 'Payment status berhasil' });
+            return res.status(200).json({
+                success: true,
+                message: 'Payment status berhasil',
+            });
 
         } else if (payment_Status === "expired" || payment_StatusKode === 2 || payment_StatusKode === -2) {
 
             // [LOGIKAMU] Proses jika transaksi kadaluarsa
+            console.log("👉 Menjalankan logika transaksi EXPIRED");
 
-            return res.status(200).json({ success: true, message: 'Payment status expired' });
+            return res.status(200).json({
+                success: true,
+                message: 'Payment status expired',
+            });
 
         } else if (payment_Status === "pending" || payment_StatusKode === 0) {
 
-            return res.status(200).json({ success: true, message: 'Payment status pending' });
+            console.log("👉 Menjalankan logika transaksi PENDING");
+
+            return res.status(200).json({
+                success: true,
+                message: 'Payment status pending',
+            });
 
         } else {
-            return res.status(400).json({ success: false, message: 'Error Data Status Callback' });
+            // Jika tipe data yang masuk benar-benar di luar dugaan
+            return res.status(400).json({
+                success: false,
+                message: `Status tidak dikenali. Diterima status: "${payment_Status}" dengan kode: ${payment_StatusKode}`
+            });
         }
 
     } catch (error) {
