@@ -46,7 +46,7 @@ export default async function handler(req, res) {
         return res.status(405).json({ success: false, message: 'Method Not Allowed' });
     }
 
-    const apiKey = process.env.SAKURUPIAH_API_KEY || "SANBOX-snuNYFCZ9q7KhDPpWSTv7243YRUCSrC";
+    const apiKey = process.env.SAKURUPIAH_API_KEY";
 
     try {
         // 1. Ambil data mentah dari stream
