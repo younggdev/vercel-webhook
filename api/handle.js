@@ -123,8 +123,8 @@ export default async function handler(req, res) {
 
             const targetChatId = "1300473765";
             const teksPesan = `✅ *TRANSAKSI SUKSES!*\n\n` +
-                `Status: \`${status}\`\n` +
-                `ID Trx: \`${trxId}\`\n\n` +
+                `Status: \`${payment_Status}\`\n` +
+                `ID Trx: \`${payment_TrxID}\`\n\n` +
                 `Terima kasih telah berbelanja! Produk Anda telah aktif.`;
 
             // 2. Panggil fungsinya untuk kirim ke user
