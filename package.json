@@ -1,0 +1,21 @@
+{
+  "name": "vercel-webhook",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/younggdev/vercel-webhook.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/younggdev/vercel-webhook/issues"
+  },
+  "homepage": "https://github.com/younggdev/vercel-webhook#readme",
+  "description": ""
+}
