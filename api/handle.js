@@ -41,6 +41,37 @@ function parseMultipartFormData(rawBodyStr, contentTypeHeader) {
     return result;
 }
 
+// Fungsi untuk mengirim pesan ke Telegram menggunakan fetch bawaan
+async function kirimNotifikasiTelegram(chatId, pesan) {
+    const BOT_TOKEN = '8710623847:AAF9A-Fnh02-A4Mp5E3UdE9VhSzpGhpHKBw';
+    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: pesan,
+                parse_mode: 'Markdown' // Agar Anda bisa pakai format bold/italic di teks
+            })
+        });
+
+        const result = await response.json();
+        if (result.ok) {
+            console.log('Notifikasi Telegram berhasil dikirim!');
+        } else {
+            console.error('Gagal kirim Telegram:', result.description);
+        }
+    } catch (error) {
+        console.error('Error saat fetch ke Telegram API:', error);
+    }
+}
+
+// === TEMPATKAN DI DALAM LOGIKA CALLBACK ANDA ===
+
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ success: false, message: 'Method Not Allowed' });
@@ -89,6 +120,15 @@ export default async function handler(req, res) {
 
             // [LOGIKAMU] Tempatkan proses sukses di sini (Kirim bot Telegram / Digiflaz)
             console.log("👉 SUKSES: Memproses transaksi berhasil.");
+
+            const targetChatId = "1300473765";
+            const teksPesan = `✅ *TRANSAKSI SUKSES!*\n\n` +
+                `Status: \`${status}\`\n` +
+                `ID Trx: \`${trxId}\`\n\n` +
+                `Terima kasih telah berbelanja! Produk Anda telah aktif.`;
+
+            // 2. Panggil fungsinya untuk kirim ke user
+            await kirimNotifikasiTelegram(targetChatId, teksPesan);
 
             return res.status(200).json({ success: true, message: 'Payment status berhasil' });
 
