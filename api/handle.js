@@ -43,7 +43,7 @@ function parseMultipartFormData(rawBodyStr, contentTypeHeader) {
 
 // Fungsi untuk mengirim pesan ke Telegram menggunakan fetch bawaan
 async function kirimNotifikasiTelegram(chatId, pesan) {
-    const BOT_TOKEN = '8710623847:AAF9A-Fnh02-A4Mp5E3UdE9VhSzpGhpHKBw';
+    const BOT_TOKEN = process.env.BOT_TOKEN;
     const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
 
     try {
