@@ -10,7 +10,7 @@ export const config = {
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY; // Gunakan service role key agar bypass RLS pada callback backend
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabaseCreateClient = createClient(supabaseUrl, supabaseKey);
 
 // Helper untuk mengambil raw body
 async function getRawBody(readable) {
