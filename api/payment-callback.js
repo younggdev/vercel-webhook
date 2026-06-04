@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import querystring from 'querystring';
-import { supabase } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 
 export const config = {
     api: {
