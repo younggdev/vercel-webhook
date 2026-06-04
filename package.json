@@ -17,5 +17,8 @@
     "url": "https://github.com/younggdev/vercel-webhook/issues"
   },
   "homepage": "https://github.com/younggdev/vercel-webhook#readme",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.107.0"
+  }
 }

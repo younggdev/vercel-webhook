@@ -1,11 +1,16 @@
 import crypto from 'crypto';
 import querystring from 'querystring';
+import { supabase } from '@supabase/supabase-js';
 
 export const config = {
     api: {
         bodyParser: false, // Kita handle pembacaan data secara manual agar lebih akurat
     },
 };
+
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY; // Gunakan service role key agar bypass RLS pada callback backend
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Helper untuk mengambil raw body
 async function getRawBody(readable) {
@@ -114,6 +119,8 @@ export default async function handler(req, res) {
 
         // Log untuk melihat hasil parsing di Vercel Dashboard kamu
         console.log(`[Parsed Data] Status: "${payment_Status}", Kode: ${payment_StatusKode}, Trx: ${payment_TrxID}`);
+        console.log(bodyData);
+
 
         // 4. Percabangan Logika Status Pembayaran
         if (payment_Status === "berhasil" || payment_StatusKode === 1) {
@@ -121,14 +128,27 @@ export default async function handler(req, res) {
             // [LOGIKAMU] Tempatkan proses sukses di sini (Kirim bot Telegram / Digiflaz)
             console.log("👉 SUKSES: Memproses transaksi berhasil.");
 
-            const targetChatId = "1300473765";
-            const teksPesan = `✅ *TRANSAKSI SUKSES!*\n\n` +
-                `Status: \`${payment_Status}\`\n` +
-                `ID Trx: \`${payment_TrxID}\`\n\n` +
-                `Terima kasih telah berbelanja! Produk Anda telah aktif.`;
+            // const { data: supabaseData, error: supabaseError } = await supabase
+            //     .from('transactions')
+            //     .insert([
+            //         {
+            //             order_id: payment_TrxID,
+            //             merchant_ref: payment_MerchantRef,
+            //             status: payment_Status,
+            //             amount: payment_Amount,
+            //             updated_at: new Date()
+            //         }
+            //     ])
+            //     .select();
 
-            // 2. Panggil fungsinya untuk kirim ke user
-            await kirimNotifikasiTelegram(targetChatId, teksPesan);
+            // const targetChatId = "1300473765";
+            // const teksPesan = `✅ *TRANSAKSI SUKSES!*\n\n` +
+            //     `Status: \`${payment_Status}\`\n` +
+            //     `ID Trx: \`${payment_TrxID}\`\n\n` +
+            //     `Terima kasih telah berbelanja! Produk Anda telah aktif.`;
+
+            // // 2. Panggil fungsinya untuk kirim ke user
+            // await kirimNotifikasiTelegram(targetChatId, teksPesan);
 
             return res.status(200).json({ success: true, message: 'Payment status berhasil' });
 
