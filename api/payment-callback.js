@@ -123,7 +123,7 @@ export default async function handler(req, res) {
 
 
         // 4. Percabangan Logika Status Pembayaran
-        if (payment_Status === "berhasil" || payment_StatusKode === 1) {
+        if (payment_Status === "berhasil" || payment_StatusKode === 1 || payment_StatusKode === '1') {
 
             // [LOGIKAMU] Tempatkan proses sukses di sini (Kirim bot Telegram / Digiflaz)
             console.log("👉 SUKSES: Memproses transaksi berhasil.");
