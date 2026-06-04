@@ -128,16 +128,18 @@ export default async function handler(req, res) {
             // [LOGIKAMU] Tempatkan proses sukses di sini (Kirim bot Telegram / Digiflaz)
             console.log("👉 SUKSES: Memproses transaksi berhasil.");
 
-            const { data: supabaseData, error: supabaseError } = await supabaseCreateClient
+            const { data: user, error: selectError } = await supabaseCreateClient
                 .from('transactions')
-                .update([
-                    {
-                        status: payment_Status,
-                    }
-                ])
+                .select('chat_id')
+                .eq('order_id', payment_MerchantRef)
+                .maybeSingle();
+
+            const { error: supabaseError } = await supabaseCreateClient
+                .from('transactions')
+                .update({ status: 'Berhasil' }) // ✅ PERBAIKAN: Gunakan {} bukan []
                 .eq('order_id', payment_MerchantRef);
 
-            const targetChatId = "1300473765";
+            const targetChatId = user.chat_id;
             const teksPesan = `✅ *TRANSAKSI SUKSES!*\n\n` +
                 `Status: \`${payment_Status}\`\n` +
                 `ID Trx: \`${payment_TrxID}\`\n\n` +
