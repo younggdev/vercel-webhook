@@ -128,27 +128,23 @@ export default async function handler(req, res) {
             // [LOGIKAMU] Tempatkan proses sukses di sini (Kirim bot Telegram / Digiflaz)
             console.log("👉 SUKSES: Memproses transaksi berhasil.");
 
-            // const { data: supabaseData, error: supabaseError } = await supabase
-            //     .from('transactions')
-            //     .insert([
-            //         {
-            //             order_id: payment_TrxID,
-            //             merchant_ref: payment_MerchantRef,
-            //             status: payment_Status,
-            //             amount: payment_Amount,
-            //             updated_at: new Date()
-            //         }
-            //     ])
-            //     .select();
+            const { data: supabaseData, error: supabaseError } = await supabaseCreateClient
+                .from('transactions')
+                .update([
+                    {
+                        status: payment_Status,
+                    }
+                ])
+                .eq('order_id', payment_MerchantRef);
 
-            // const targetChatId = "1300473765";
-            // const teksPesan = `✅ *TRANSAKSI SUKSES!*\n\n` +
-            //     `Status: \`${payment_Status}\`\n` +
-            //     `ID Trx: \`${payment_TrxID}\`\n\n` +
-            //     `Terima kasih telah berbelanja! Produk Anda telah aktif.`;
+            const targetChatId = "1300473765";
+            const teksPesan = `✅ *TRANSAKSI SUKSES!*\n\n` +
+                `Status: \`${payment_Status}\`\n` +
+                `ID Trx: \`${payment_TrxID}\`\n\n` +
+                `Terima kasih telah berbelanja! Produk Anda telah aktif.`;
 
-            // // 2. Panggil fungsinya untuk kirim ke user
-            // await kirimNotifikasiTelegram(targetChatId, teksPesan);
+            // 2. Panggil fungsinya untuk kirim ke user
+            await kirimNotifikasiTelegram(targetChatId, teksPesan);
 
             return res.status(200).json({ success: true, message: 'Payment status berhasil' });
 
