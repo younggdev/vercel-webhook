@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import querystring from 'querystring';
 import { createClient } from '@supabase/supabase-js';
+import axios from 'axios';
 
 export const config = {
     api: {
@@ -11,6 +12,8 @@ export const config = {
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY; // Gunakan service role key agar bypass RLS pada callback backend
 const supabaseCreateClient = createClient(supabaseUrl, supabaseKey);
+const DIGI_USER = process.env.DIGIFLAZ_USERNAME;
+const DIGI_KEY = process.env.DIGIFLAZ_API_KEY;
 
 // Helper untuk mengambil raw body
 async function getRawBody(readable) {
@@ -75,6 +78,34 @@ async function kirimNotifikasiTelegram(chatId, pesan) {
     }
 }
 
+function generateSign(username, apiKey, refId) {
+    return crypto
+        .createHash('md5')
+        .update(username + apiKey + refId)
+        .digest('hex');
+}
+
+async function placeOrder(sku, customerNo, refId) {
+    const sign = generateSign(DIGI_USER, DIGI_KEY, refId);
+
+    console.log(`--- Melakukan Order ---`);
+    console.log(`SKU: ${sku} | Target: ${customerNo} | RefID: ${refId}`);
+    try {
+        const response = await axios.post('https://api.digiflazz.com/v1/transaction', {
+            username: DIGI_USER,
+            buyer_sku_code: sku,
+            customer_no: customerNo,
+            ref_id: refId,
+            sign: sign
+        });
+        console.log("Respon Digiflazz:", response.data);
+        return response.data.data;
+    } catch (error) {
+        console.error('Digiflazz Error:', error.response?.data || error.message);
+        return null;
+    }
+}
+
 // === TEMPATKAN DI DALAM LOGIKA CALLBACK ANDA ===
 
 export default async function handler(req, res) {
@@ -130,21 +161,54 @@ export default async function handler(req, res) {
 
             const { data: user, error: selectError } = await supabaseCreateClient
                 .from('transactions')
-                .select('chat_id')
+                .select('chat_id', 'sku', 'target_id', 'status')
                 .eq('order_id', payment_MerchantRef)
                 .maybeSingle();
+
+            let sku_code = user.sku;
+            let targetId = user.target_id;
+            let refId = payment_MerchantRef;
+
+            if (user.status === 'Berhasil') {
+                console.log("⚠️ Transaksi ini sudah sukses diproses sebelumnya. Blokir penembakan ulang.");
+                return res.status(200).json({ success: true, message: 'Already processed' });
+            }
 
             const { error: supabaseError } = await supabaseCreateClient
                 .from('transactions')
                 .update({ status: 'Berhasil' }) // ✅ PERBAIKAN: Gunakan {} bukan []
                 .eq('order_id', payment_MerchantRef);
 
-            const targetChatId = user.chat_id;
-            const teksPesan = `✅ *TRANSAKSI SUKSES!*\n\n` +
-                `Status: \`${payment_Status}\`\n` +
-                `ID Trx: \`${payment_TrxID}\`\n\n` +
-                `Terima kasih telah berbelanja! Produk Anda telah aktif.`;
+            const result = await placeOrder(sku_code, targetId, refId);
 
+            let statusTopup = "Sedang diproses";
+            let teksPesan = ''
+            if (result && result.status === 'Gagal') {
+                statusTopup = `Gagal (${resultDigi.sn})`;
+                // Kembalikan status di database menjadi butuh tindakan admin/refund
+                await supabaseCreateClient
+                    .from('transactions')
+                    .update({ status: 'Gagal (Butuh Refund)' })
+                    .eq('order_id', payment_MerchantRef);
+
+                teksPesan = `❌ *PEMBAYARAN DITERIMA, TAPI TOP-UP GAGAL*\n\n` +
+                    `Halo, pembayaran Anda untuk Order ID \`${payment_MerchantRef}\` telah kami terima.\n\n` +
+                    `Namun, produk sedang mengalami gangguan sistem/stok habis dengan alasan: *${result.sn || 'Provider Gangguan'}*.\n\n` +
+                    `🚨 *Mengenai Dana Anda:*\n` +
+                    `Jangan khawatir, data transaksi Anda sudah tercatat di sistem kami. *Akan kami lakukan refund secepatnya* ke rekening/e-wallet Anda.\n\n` +
+                    `Silakan hubungi Customer Service / Admin dengan mengirimkan bukti screenshot pesan ini untuk mempercepat proses klaim. Terima kasih atas pengertiannya.`;
+            } else {
+                teksPesan = `✅ *PEMBAYARAN BERHASIL DITERIMA!*\n\n` +
+                    `📌 *Detail Transaksi:*\n` +
+                    `• ID Pesanan: \`${payment_MerchantRef}\`\n` +
+                    `• ID Gateway: \`${payment_TrxID}\`\n` +
+                    `• Produk: *${sku_code}*\n` +
+                    `• Tujuan: \`${targetId}\`\n\n` +
+                    `⚡ *Status Top-Up:* \`${statusTopup}\`\n\n` +
+                    `Terima kasih telah memercayakan Yodev Zone! Pesanan Anda diantrekan otomatis oleh sistem.`;
+            }
+
+            const targetChatId = user.chat_id;
             // 2. Panggil fungsinya untuk kirim ke user
             await kirimNotifikasiTelegram(targetChatId, teksPesan);
 
