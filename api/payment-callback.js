@@ -161,7 +161,7 @@ export default async function handler(req, res) {
 
             const { data: user, error: selectError } = await supabaseCreateClient
                 .from('transactions')
-                .select('chat_id', 'sku', 'target_id', 'status')
+                .select('chat_id', 'sku', 'target_id', 'status_pay')
                 .eq('order_id', payment_MerchantRef)
                 .maybeSingle();
 
@@ -169,14 +169,14 @@ export default async function handler(req, res) {
             let targetId = user.target_id;
             let refId = payment_MerchantRef;
 
-            if (user.status === 'Berhasil') {
+            if (user.status_pay === 'Berhasil') {
                 console.log("⚠️ Transaksi ini sudah sukses diproses sebelumnya. Blokir penembakan ulang.");
                 return res.status(200).json({ success: true, message: 'Already processed' });
             }
 
             const { error: supabaseError } = await supabaseCreateClient
                 .from('transactions')
-                .update({ status: 'Berhasil' }) // ✅ PERBAIKAN: Gunakan {} bukan []
+                .update({ status_pay: 'Berhasil' }) // ✅ PERBAIKAN: Gunakan {} bukan []
                 .eq('order_id', payment_MerchantRef);
 
             const result = await placeOrder(sku_code, targetId, refId);
@@ -188,7 +188,7 @@ export default async function handler(req, res) {
                 // Kembalikan status di database menjadi butuh tindakan admin/refund
                 await supabaseCreateClient
                     .from('transactions')
-                    .update({ status: 'Gagal (Butuh Refund)' })
+                    .update({ status_pay: 'Gagal (Butuh Refund)' })
                     .eq('order_id', payment_MerchantRef);
 
                 teksPesan = `❌ *PEMBAYARAN DITERIMA, TAPI TOP-UP GAGAL*\n\n` +
@@ -201,7 +201,6 @@ export default async function handler(req, res) {
                 teksPesan = `✅ *PEMBAYARAN BERHASIL DITERIMA!*\n\n` +
                     `📌 *Detail Transaksi:*\n` +
                     `• ID Pesanan: \`${payment_MerchantRef}\`\n` +
-                    `• ID Gateway: \`${payment_TrxID}\`\n` +
                     `• Produk: *${sku_code}*\n` +
                     `• Tujuan: \`${targetId}\`\n\n` +
                     `⚡ *Status Top-Up:* \`${statusTopup}\`\n\n` +
