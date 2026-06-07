@@ -161,7 +161,7 @@ export default async function handler(req, res) {
 
             const { data: user, error: selectError } = await supabaseCreateClient
                 .from('transactions')
-                .select('chat_id', 'sku', 'target_id', 'status_pay')
+                .select('*')
                 .eq('order_id', payment_MerchantRef)
                 .single();
 
@@ -183,7 +183,7 @@ export default async function handler(req, res) {
                 .update({ status_pay: 'Berhasil' }) // ✅ PERBAIKAN: Gunakan {} bukan []
                 .eq('order_id', payment_MerchantRef);
 
-            const result = await placeOrder(sku_code, targetId, refId);
+            // const result = await placeOrder(sku_code, targetId, refId);
 
             let statusTopup = "Sedang diproses";
             let teksPesan = ''
