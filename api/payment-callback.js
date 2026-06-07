@@ -184,6 +184,7 @@ export default async function handler(req, res) {
                 .eq('order_id', payment_MerchantRef);
 
             // const result = await placeOrder(sku_code, targetId, refId);
+            const result = "berhasil";
 
             let statusTopup = "Sedang diproses";
             let teksPesan = ''
