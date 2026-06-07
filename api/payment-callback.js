@@ -163,7 +163,10 @@ export default async function handler(req, res) {
                 .from('transactions')
                 .select('chat_id', 'sku', 'target_id', 'status_pay')
                 .eq('order_id', payment_MerchantRef)
-                .maybeSingle();
+                .single();
+
+            console.log(user);
+
 
             const sku_code = user.sku;
             const targetId = user.target_id;
