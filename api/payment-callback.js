@@ -165,9 +165,10 @@ export default async function handler(req, res) {
                 .eq('order_id', payment_MerchantRef)
                 .maybeSingle();
 
-            let sku_code = user.sku;
-            let targetId = user.target_id;
-            let refId = payment_MerchantRef;
+            const sku_code = user.sku;
+            const targetId = user.target_id;
+            const refId = payment_MerchantRef;
+            console.log(`[Memori Terkunci] Mengamankan SKU: ${sku_code} | Target: ${targetId}`);
 
             if (user.status_pay === 'Berhasil') {
                 console.log("⚠️ Transaksi ini sudah sukses diproses sebelumnya. Blokir penembakan ulang.");
