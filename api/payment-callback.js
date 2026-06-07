@@ -183,8 +183,8 @@ export default async function handler(req, res) {
                 .update({ status_pay: 'Berhasil' }) // ✅ PERBAIKAN: Gunakan {} bukan []
                 .eq('order_id', payment_MerchantRef);
 
-            // const result = await placeOrder(sku_code, targetId, refId);
-            const result = "berhasil";
+            const result = await placeOrder(sku_code, targetId, refId);
+            // const result = "berhasil";
 
             let statusTopup = "Sedang diproses";
             let teksPesan = ''
